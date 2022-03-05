@@ -1,0 +1,25 @@
+page1.png
+   size: 640, 480
+   format: RGBA8888
+   filter: Linear, Linear
+   repeat: none
+   pma: true
+dagger
+   bounds: 372, 100, 26, 108
+head
+   index: 0
+   bounds: 2, 21, 103, 81
+   rotate: 90
+
+page2.png
+   size: 640, 480
+   format: RGB565
+   filter: Nearest, Nearest
+   repeat: x
+bg-dialog
+   index: -1
+   rotate: false
+   bounds: 519, 223, 17, 38
+   offsets: 2, 2, 21, 42
+   split: 10, 10, 29, 10
+   pad: -1, -1, 28, 10
