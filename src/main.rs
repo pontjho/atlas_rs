@@ -1,6 +1,5 @@
-pub mod atlas;
-use crate::atlas::AtlasParser;
-use crate::atlas::ConcreteAtlasParser;
+use atlas_rs::atlas::atlas_parser::AtlasParser;
+use atlas_rs::atlas::concrete_atlas_parser::ConcreteAtlasParser;
 
 use std::fs;
 
