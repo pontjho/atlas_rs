@@ -32,4 +32,16 @@ impl Region
     {
         Region { name: name.to_string(), ..Region::default() }
     }
+
+    pub fn finalise(self) -> Self
+    {
+        let (_, _, ow, oh) = self.offsets;
+        let (_, _, bw, bh) = self.bounds;
+
+        let offsets = if ow == 0 && oh == 0 { (0, 0, bw, bh) } else { self.offsets };
+        Region {
+            offsets,
+            ..self
+        }
+    }
 }

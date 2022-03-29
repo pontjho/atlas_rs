@@ -40,6 +40,6 @@ impl Page
 
     pub fn add_region(self, region: Region) -> Self
     {
-        Page { regions: self.regions.clone().into_iter().chain(vec![region]).collect(), ..self }
+        Page { regions: self.regions.clone().into_iter().chain(vec![region.finalise()]).collect(), ..self }
     }
 }
