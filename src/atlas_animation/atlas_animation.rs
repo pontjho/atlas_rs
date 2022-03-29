@@ -88,6 +88,8 @@ impl ConcreteAtlasAnimation
             }
         }
 
+        println!("{:#?}", region_lookup);
+
         ConcreteAtlasAnimation {
             region_lookup,
             region_frames

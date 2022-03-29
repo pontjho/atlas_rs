@@ -40,6 +40,8 @@ impl Page
 
     pub fn add_region(self, region: Region) -> Self
     {
-        Page { regions: self.regions.clone().into_iter().chain(vec![region.finalise()]).collect(), ..self }
+        let mut p = Page { regions: self.regions.clone().into_iter().chain(vec![region.finalise()]).collect(), ..self };
+        p.regions.sort_by(|a, b| a.index.unwrap_or(0).cmp(&b.index.unwrap_or(0)));
+        p
     }
 }
