@@ -45,39 +45,48 @@ impl ConcreteAtlasAnimation
                 let region_id = region_lookup[&region.name];
 
                 let (width, height) = page.size;
+                let (pad_left, pad_top, orig_x, orig_y) = region.offsets;
                 let (sub_image_x, sub_image_y, sub_image_width, sub_image_height) = region.bounds;
-                let sub_image_x_normalised = sub_image_x as f32 / width as f32;
-                let sub_image_y_normalised = sub_image_y as f32 / height as f32;
-                let sub_image_width_normalised = sub_image_width as f32 / width as f32;
-                let sub_image_height_normalised = sub_image_height as f32 / height as f32;
+
+                let (width, height) = (width as f32, height as f32);
+                let (pad_left, pad_top, orig_x, orig_y) = (pad_left as f32, pad_top as f32, orig_x as f32, orig_y as f32);
+                let (sub_image_x, sub_image_y, sub_image_width, sub_image_height) = (sub_image_x as f32, sub_image_y as f32, sub_image_width as f32, sub_image_height as f32);
+
+                let sub_image_x_normalised = sub_image_x / width;
+                let sub_image_y_normalised = sub_image_y / height;
+                let sub_image_width_normalised = sub_image_width / width;
+                let sub_image_height_normalised = sub_image_height / height;
                 let uv_x1 = sub_image_x_normalised;
                 let uv_x2 = sub_image_x_normalised + sub_image_width_normalised;
                 let uv_y1 = sub_image_y_normalised;
                 let uv_y2 = sub_image_y_normalised + sub_image_height_normalised;
 
-                let (pad_left, pad_top, orig_x, orig_y) = region.offsets;
+                let scale_x = 1.0 / sub_image_width;
+                let scale_y = 1.0 / sub_image_height;
+
                 let pad_right = orig_x - sub_image_width;
                 let pad_bottom = orig_y - sub_image_height;
-                let pad_left_normalised = pad_left as f32 / width as f32;
-                let pad_right_normalised = pad_right as f32 / width as f32;
-                let pad_top_normalised = pad_top as f32 / height as f32;
-                let pad_bottom_normalised = pad_bottom as f32 / height as f32;
+                let pad_left_normalised = pad_left / width;
+                let pad_right_normalised = pad_right / width;
+                let pad_top_normalised = pad_top / height;
+                let pad_bottom_normalised = pad_bottom / height;
 
-                let vx1 = -1.0 + pad_left_normalised;
-                let vx2 = 1.0 - pad_right_normalised;
-                let vy1 = 1.0 - pad_top_normalised;
-                let vy2 = -1.0 + pad_bottom_normalised;
+                let vx1 = (-1.0 + pad_left_normalised) * width;
+                let vx2 = (1.0 - pad_right_normalised) * width;
+                let vy1 = (1.0 - pad_top_normalised) * height;
+                let vy2 = (-1.0 + pad_bottom_normalised) * height;
 
                 region_frames.push(vec![]);
                 region_frames[region_id].push(AnimationFrame {
                     image_id: region_id,
+                    transform: cgmath::Matrix3::from_nonuniform_scale(scale_x, scale_y).into(),
                     vertices: [
-                        [vx1, vy1, 0.0],
-                        [vx2, vy1, 0.0],
-                        [vx2, vy2, 0.0],
-                        [vx1, vy2, 0.0]
+                        [vx1, vy1, 1.0],
+                        [vx2, vy1, 1.0],
+                        [vx2, vy2, 1.0],
+                        [vx1, vy2, 1.0]
                     ],
-                    indices: [ 0, 1, 2, 0, 2, 3],
+                    // indices: [ 0, 1, 2, 0, 2, 3],
                     uvs: [
                         [uv_x1, uv_y1],
                         [uv_x2, uv_y1],
@@ -101,12 +110,14 @@ impl AtlasAnimation for ConcreteAtlasAnimation
 {
     fn get_frame(&self, region: &str, frame: f32) -> AnimationFrame
     {
-        todo!()
+        let frame_index = self.region_lookup[region];
+        self.get_indexed_frame(frame_index, frame)
     }
 
     fn get_frame_exact(&self, region: &str, frame: usize) -> AnimationFrame
     {
-        todo!()
+        let frame_index = self.region_lookup[region];
+        self.get_indexed_frame_exact(frame_index, frame)
     }
 
     fn get_indexed_frame(&self, region: usize, frame: f32) -> AnimationFrame
@@ -119,7 +130,10 @@ impl AtlasAnimation for ConcreteAtlasAnimation
 
     fn get_indexed_frame_exact(&self, region: usize, frame: usize) -> AnimationFrame
     {
-        todo!()
+        let ref region = self.region_frames[region];
+        // let frame = ((region.len() as f32) * frame) as usize;
+        let frame = if frame >= region.len() { region.len() - 1 } else { frame };
+        region[frame].clone()
     }
 }
 
@@ -128,6 +142,7 @@ pub struct AnimationFrame
 {
     pub image_id: usize,
     pub vertices: [[f32; 3]; 4],
-    pub indices: [u16; 6],
+    //pub indices: [u16; 6],
+    pub transform: [[f32; 3]; 3],
     pub uvs: [[f32; 2]; 4]
 }
