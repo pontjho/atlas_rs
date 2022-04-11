@@ -45,11 +45,11 @@ impl ConcreteAtlasAnimation
                 let region_id = region_lookup[&region.name];
 
                 let (width, height) = page.size;
-                let (pad_left, pad_top, orig_x, orig_y) = region.offsets;
+                let (pad_left, pad_bottom, orig_x, orig_y) = region.offsets;
                 let (sub_image_x, sub_image_y, sub_image_width, sub_image_height) = region.bounds;
 
                 let (width, height) = (width as f32, height as f32);
-                let (pad_left, pad_top, orig_x, orig_y) = (pad_left as f32, pad_top as f32, orig_x as f32, orig_y as f32);
+                let (pad_left, pad_bottom, orig_x, orig_y) = (pad_left as f32, pad_bottom as f32, orig_x as f32, orig_y as f32);
                 let (sub_image_x, sub_image_y, sub_image_width, sub_image_height) = (sub_image_x as f32, sub_image_y as f32, sub_image_width as f32, sub_image_height as f32);
 
                 let sub_image_x_normalised = sub_image_x / width;
@@ -61,32 +61,38 @@ impl ConcreteAtlasAnimation
                 let uv_y1 = sub_image_y_normalised;
                 let uv_y2 = sub_image_y_normalised + sub_image_height_normalised;
 
-                let scale_x = 1.0 / sub_image_width;
-                let scale_y = 1.0 / sub_image_height;
+                // let scale_x = 1.0 / sub_image_width;
+                // let scale_y = 1.0 / sub_image_height;
 
                 let pad_right = orig_x - sub_image_width;
-                let pad_bottom = orig_y - sub_image_height;
-                let pad_left_normalised = pad_left / width;
-                let pad_right_normalised = pad_right / width;
-                let pad_top_normalised = pad_top / height;
-                let pad_bottom_normalised = pad_bottom / height;
+                let pad_top = orig_y - sub_image_height;
+                // let pad_left_normalised = pad_left / width;
+                // let pad_right_normalised = pad_right / width;
+                // let pad_top_normalised = pad_top / height;
+                // let pad_bottom_normalised = pad_bottom / height;
 
-                let vx1 = (-1.0 + pad_left_normalised) * width;
-                let vx2 = (1.0 - pad_right_normalised) * width;
-                let vy1 = (1.0 - pad_top_normalised) * height;
-                let vy2 = (-1.0 + pad_bottom_normalised) * height;
+                // let (half_width, half_height) = (sub_image_width / 2.0, sub_image_height / 2.0);
+                // let (left, right) = (-half_width + pad_left, half_width - pad_right);
+                // let (top, bottom) = (half_height - pad_top, -half_height + pad_bottom);
+                // let vertices = [
+                //     [left, top, 1.0],
+                //     [right, top, 1.0],
+                //     [right, bottom, 1.0],
+                //     [left, bottom, 1.0]
+                // ];
+
+                // let vx1 = (-1.0 + pad_left_normalised) * width;
+                // let vx2 = (1.0 - pad_right_normalised) * width;
+                // let vy1 = (1.0 - pad_top_normalised) * height;
+                // let vy2 = (-1.0 + pad_bottom_normalised) * height;
 
                 region_frames.push(vec![]);
                 region_frames[region_id].push(AnimationFrame {
                     image_id: region_id,
-                    transform: cgmath::Matrix3::from_nonuniform_scale(scale_x, scale_y).into(),
-                    vertices: [
-                        [vx1, vy1, 1.0],
-                        [vx2, vy1, 1.0],
-                        [vx2, vy2, 1.0],
-                        [vx1, vy2, 1.0]
-                    ],
-                    // indices: [ 0, 1, 2, 0, 2, 3],
+                    default_dimensions: (sub_image_width, sub_image_height),
+                    //transform: cgmath::Matrix3::from_nonuniform_scale(scale_x, scale_y).into(),
+                    // vertices,
+                    padding: [pad_left, pad_top, pad_right, pad_bottom],
                     uvs: [
                         [uv_x1, uv_y1],
                         [uv_x2, uv_y1],
@@ -141,8 +147,10 @@ impl AtlasAnimation for ConcreteAtlasAnimation
 pub struct AnimationFrame
 {
     pub image_id: usize,
-    pub vertices: [[f32; 3]; 4],
+    pub padding: [f32; 4],
+    pub default_dimensions: (f32, f32),
+    // pub vertices: [[f32; 3]; 4],
     //pub indices: [u16; 6],
-    pub transform: [[f32; 3]; 3],
+    // pub transform: [[f32; 3]; 3],
     pub uvs: [[f32; 2]; 4]
 }
