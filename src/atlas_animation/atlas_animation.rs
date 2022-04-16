@@ -13,12 +13,13 @@ pub trait AtlasAnimation
 pub struct ConcreteAtlasAnimation
 {
     pub region_lookup: HashMap<String, usize>,
-    pub region_frames: Vec<Vec<AnimationFrame>>
+    pub region_frames: Vec<Vec<AnimationFrame>>,
+    // pub base_image_index: usize
 }
 
 impl ConcreteAtlasAnimation
 {
-    pub fn new(pages: Vec<Page>) -> ConcreteAtlasAnimation
+    pub fn new(pages: Vec<Page>, base_image_index: usize) -> ConcreteAtlasAnimation
     {
         let mut region_lookup: HashMap<String, usize> = pages
             .iter()
@@ -36,10 +37,8 @@ impl ConcreteAtlasAnimation
             .collect();
         let mut region_frames: Vec<Vec<AnimationFrame>> = vec![];
 
-        for page in pages
+        for (page_id, page) in pages.into_iter().enumerate()
         {
-            //let page_frames: Vec<AnimationFrame> = Default::default();
-
             for region in page.regions
             {
                 let region_id = region_lookup[&region.name];
@@ -61,37 +60,15 @@ impl ConcreteAtlasAnimation
                 let uv_y1 = sub_image_y_normalised;
                 let uv_y2 = sub_image_y_normalised + sub_image_height_normalised;
 
-                // let scale_x = 1.0 / sub_image_width;
-                // let scale_y = 1.0 / sub_image_height;
-
                 let pad_right = orig_x - sub_image_width;
                 let pad_top = orig_y - sub_image_height;
-                // let pad_left_normalised = pad_left / width;
-                // let pad_right_normalised = pad_right / width;
-                // let pad_top_normalised = pad_top / height;
-                // let pad_bottom_normalised = pad_bottom / height;
 
-                // let (half_width, half_height) = (sub_image_width / 2.0, sub_image_height / 2.0);
-                // let (left, right) = (-half_width + pad_left, half_width - pad_right);
-                // let (top, bottom) = (half_height - pad_top, -half_height + pad_bottom);
-                // let vertices = [
-                //     [left, top, 1.0],
-                //     [right, top, 1.0],
-                //     [right, bottom, 1.0],
-                //     [left, bottom, 1.0]
-                // ];
 
-                // let vx1 = (-1.0 + pad_left_normalised) * width;
-                // let vx2 = (1.0 - pad_right_normalised) * width;
-                // let vy1 = (1.0 - pad_top_normalised) * height;
-                // let vy2 = (-1.0 + pad_bottom_normalised) * height;
+                // println!("--------{}---------{}------------------", page_id, base_image_index);
 
-                region_frames.push(vec![]);
-                region_frames[region_id].push(AnimationFrame {
-                    image_id: region_id,
+                let animation_frame = AnimationFrame {
+                    image_id: base_image_index + page_id,
                     default_dimensions: (sub_image_width, sub_image_height),
-                    //transform: cgmath::Matrix3::from_nonuniform_scale(scale_x, scale_y).into(),
-                    // vertices,
                     padding: [pad_left, pad_top, pad_right, pad_bottom],
                     uvs: [
                         [uv_x1, uv_y1],
@@ -99,15 +76,20 @@ impl ConcreteAtlasAnimation
                         [uv_x2, uv_y2],
                         [uv_x1, uv_y2]
                     ]
-                });
+                };
+
+                region_frames.push(vec![]);
+                region_frames[region_id].push(animation_frame);
             }
         }
 
-        println!("{:#?}", region_lookup);
+        // println!("{:#?}", region_lookup);
+        //panic!();
 
         ConcreteAtlasAnimation {
             region_lookup,
-            region_frames
+            region_frames,
+           // base_image_index
         }
     }
 }
@@ -116,6 +98,7 @@ impl AtlasAnimation for ConcreteAtlasAnimation
 {
     fn get_frame(&self, region: &str, frame: f32) -> AnimationFrame
     {
+        println!("{}", region);
         let frame_index = self.region_lookup[region];
         self.get_indexed_frame(frame_index, frame)
     }
